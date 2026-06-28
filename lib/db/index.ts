@@ -3,7 +3,8 @@ import { drizzle } from 'drizzle-orm/neon-http'
 import * as schema from './schema'
 
 const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
-const sqlFn = neon(dbUrl!)
+// Fallback prevents build-time crash; real URL is required at runtime
+const sqlFn = neon(dbUrl || 'postgresql://localhost/placeholder')
 export const db = drizzle(sqlFn, { schema })
 
 export async function initDb() {
