@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const { name, email, password, phone, address } = parsed.data
 
-    const existing = await db.select().from(restaurants).where(eq(restaurants.email, email)).get()
+    const existing = await db.select().from(restaurants).where(eq(restaurants.email, email)).then(rows => rows[0])
     if (existing) return NextResponse.json({ error: 'כתובת אימייל כבר קיימת במערכת' }, { status: 409 })
 
     const hashedPassword = await bcrypt.hash(password, 12)

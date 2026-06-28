@@ -25,22 +25,22 @@ export default async function DashboardPage() {
     activeCustomers,
   ] = await Promise.all([
     db.select({ count: sql<number>`count(*)` }).from(orders)
-      .where(and(eq(orders.restaurantId, rid), gte(orders.createdAt, todayStart.toISOString()), not(eq(orders.status, 'CANCELLED')))).get(),
+      .where(and(eq(orders.restaurantId, rid), gte(orders.createdAt, todayStart.toISOString()), not(eq(orders.status, 'CANCELLED')))).then(rows => rows[0]),
     db.select({ count: sql<number>`count(*)` }).from(orders)
-      .where(and(eq(orders.restaurantId, rid), sql`status IN ('PENDING','CONFIRMED','PREPARING')`)).get(),
+      .where(and(eq(orders.restaurantId, rid), sql`status IN ('PENDING','CONFIRMED','PREPARING')`)).then(rows => rows[0]),
     db.select({ total: sql<number>`sum(total_amount)` }).from(orders)
-      .where(and(eq(orders.restaurantId, rid), eq(orders.paymentStatus, 'PAID'))).get(),
+      .where(and(eq(orders.restaurantId, rid), eq(orders.paymentStatus, 'PAID'))).then(rows => rows[0]),
     db.select({ total: sql<number>`sum(total_amount)` }).from(orders)
-      .where(and(eq(orders.restaurantId, rid), eq(orders.paymentStatus, 'PAID'), gte(orders.createdAt, todayStart.toISOString()))).get(),
+      .where(and(eq(orders.restaurantId, rid), eq(orders.paymentStatus, 'PAID'), gte(orders.createdAt, todayStart.toISOString()))).then(rows => rows[0]),
     db.select({ count: sql<number>`count(*)` }).from(employees)
-      .where(and(eq(employees.restaurantId, rid), eq(employees.isActive, true))).get(),
+      .where(and(eq(employees.restaurantId, rid), eq(employees.isActive, true))).then(rows => rows[0]),
     db.select({ count: sql<number>`count(*)` }).from(reservations)
-      .where(and(eq(reservations.restaurantId, rid), eq(reservations.status, 'PENDING'))).get(),
+      .where(and(eq(reservations.restaurantId, rid), eq(reservations.status, 'PENDING'))).then(rows => rows[0]),
     db.select().from(feedbackTable)
       .where(eq(feedbackTable.restaurantId, rid))
       .orderBy(desc(feedbackTable.createdAt)).limit(5),
     db.select({ count: sql<number>`count(*)` }).from(customers)
-      .where(eq(customers.restaurantId, rid)).get(),
+      .where(eq(customers.restaurantId, rid)).then(rows => rows[0]),
   ])
 
   const avgRating = recentFeedback.length > 0

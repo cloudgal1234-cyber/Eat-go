@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     .orderBy(desc(feedback.createdAt))
 
   const result = await Promise.all(fbList.map(async fb => {
-    const customer = fb.customerId ? await db.select().from(customers).where(eq(customers.id, fb.customerId)).get() : null
+    const customer = fb.customerId ? await db.select().from(customers).where(eq(customers.id, fb.customerId)).then(rows => rows[0]) : null
     return { ...fb, customer }
   }))
 
@@ -36,12 +36,12 @@ export async function PUT(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'נתונים לא תקינים' }, { status: 400 })
 
   const fb = await db.select().from(feedback)
-    .where(and(eq(feedback.id, parsed.data.id), eq(feedback.restaurantId, session.restaurantId))).get()
+    .where(and(eq(feedback.id, parsed.data.id), eq(feedback.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!fb) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   await db.update(feedback)
     .set({ response: parsed.data.response, updatedAt: new Date().toISOString() })
     .where(eq(feedback.id, parsed.data.id))
-  const updated = await db.select().from(feedback).where(eq(feedback.id, parsed.data.id)).get()
+  const updated = await db.select().from(feedback).where(eq(feedback.id, parsed.data.id)).then(rows => rows[0])
   return NextResponse.json(updated)
 }

@@ -13,12 +13,12 @@ export async function GET(req: NextRequest) {
     .orderBy(desc(deliveries.createdAt))
 
   const result = await Promise.all(deliveryList.map(async d => {
-    const order = await db.select().from(orders).where(eq(orders.id, d.orderId)).get()
-    const customer = order?.customerId ? await db.select().from(customers).where(eq(customers.id, order.customerId)).get() : null
+    const order = await db.select().from(orders).where(eq(orders.id, d.orderId)).then(rows => rows[0])
+    const customer = order?.customerId ? await db.select().from(customers).where(eq(customers.id, order.customerId)).then(rows => rows[0]) : null
     const items = await db.select({ qty: orderItems.quantity, menuItemName: menuItems.name })
       .from(orderItems).leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
       .where(eq(orderItems.orderId, d.orderId))
-    const courier = d.courierId ? await db.select().from(couriers).where(eq(couriers.id, d.courierId)).get() : null
+    const courier = d.courierId ? await db.select().from(couriers).where(eq(couriers.id, d.courierId)).then(rows => rows[0]) : null
 
     return {
       ...d,

@@ -55,12 +55,12 @@ export async function POST(req: NextRequest) {
 
   if (parsed.data.categoryId) {
     const cat = await db.select().from(menuCategories)
-      .where(and(eq(menuCategories.id, parsed.data.categoryId), eq(menuCategories.restaurantId, session.restaurantId))).get()
+      .where(and(eq(menuCategories.id, parsed.data.categoryId), eq(menuCategories.restaurantId, session.restaurantId))).then(rows => rows[0])
     if (!cat) return NextResponse.json({ error: 'קטגוריה לא נמצאה' }, { status: 404 })
   }
 
   const id = crypto.randomUUID()
   await db.insert(menuItems).values({ id, restaurantId: session.restaurantId, ...parsed.data })
-  const item = await db.select().from(menuItems).where(eq(menuItems.id, id)).get()
+  const item = await db.select().from(menuItems).where(eq(menuItems.id, id)).then(rows => rows[0])
   return NextResponse.json(item, { status: 201 })
 }

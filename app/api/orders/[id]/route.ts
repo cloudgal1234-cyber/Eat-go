@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const order = await db.select().from(orders)
-    .where(and(eq(orders.id, params.id), eq(orders.restaurantId, session.restaurantId))).get()
+    .where(and(eq(orders.id, params.id), eq(orders.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!order) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   const items = await db.select({
@@ -27,11 +27,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     menuItemName: menuItems.name,
   }).from(orderItems).leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id)).where(eq(orderItems.orderId, params.id))
 
-  const customer = order.customerId ? await db.select().from(customers).where(eq(customers.id, order.customerId)).get() : null
-  const table = order.tableId ? await db.select().from(tables).where(eq(tables.id, order.tableId)).get() : null
-  const delivery = await db.select().from(deliveries).where(eq(deliveries.orderId, params.id)).get()
+  const customer = order.customerId ? await db.select().from(customers).where(eq(customers.id, order.customerId)).then(rows => rows[0]) : null
+  const table = order.tableId ? await db.select().from(tables).where(eq(tables.id, order.tableId)).then(rows => rows[0]) : null
+  const delivery = await db.select().from(deliveries).where(eq(deliveries.orderId, params.id)).then(rows => rows[0])
   let courier = null
-  if (delivery?.courierId) courier = await db.select().from(couriers).where(eq(couriers.id, delivery.courierId)).get()
+  if (delivery?.courierId) courier = await db.select().from(couriers).where(eq(couriers.id, delivery.courierId)).then(rows => rows[0])
 
   return NextResponse.json({
     ...order,
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const order = await db.select().from(orders)
-    .where(and(eq(orders.id, params.id), eq(orders.restaurantId, session.restaurantId))).get()
+    .where(and(eq(orders.id, params.id), eq(orders.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!order) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   const body = await req.json()
@@ -58,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   if (parsed.data.paymentStatus === 'PAID' && order.paymentStatus !== 'PAID' && order.customerId) {
     const loyalty = await db.select().from(loyaltyPrograms)
-      .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).get()
+      .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).then(rows => rows[0])
     if (loyalty?.isActive) {
       const points = Math.floor(order.totalAmount * loyalty.pointsPerAmount)
       await db.update(customers).set({
@@ -69,6 +69,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
   }
 
-  const updated = await db.select().from(orders).where(eq(orders.id, params.id)).get()
+  const updated = await db.select().from(orders).where(eq(orders.id, params.id)).then(rows => rows[0])
   return NextResponse.json(updated)
 }

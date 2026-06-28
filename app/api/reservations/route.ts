@@ -37,8 +37,8 @@ export async function GET(req: NextRequest) {
     .orderBy(asc(reservations.date))
 
   const result = await Promise.all(resList.map(async r => {
-    const customer = r.customerId ? await db.select().from(customers).where(eq(customers.id, r.customerId)).get() : null
-    const table = r.tableId ? await db.select().from(tables).where(eq(tables.id, r.tableId)).get() : null
+    const customer = r.customerId ? await db.select().from(customers).where(eq(customers.id, r.customerId)).then(rows => rows[0]) : null
+    const table = r.tableId ? await db.select().from(tables).where(eq(tables.id, r.tableId)).then(rows => rows[0]) : null
     return { ...r, customer, table }
   }))
 
@@ -56,12 +56,12 @@ export async function POST(req: NextRequest) {
 
   if (parsed.data.tableId) {
     const table = await db.select().from(tables)
-      .where(and(eq(tables.id, parsed.data.tableId), eq(tables.restaurantId, session.restaurantId))).get()
+      .where(and(eq(tables.id, parsed.data.tableId), eq(tables.restaurantId, session.restaurantId))).then(rows => rows[0])
     if (!table) return NextResponse.json({ error: 'שולחן לא נמצא' }, { status: 404 })
   }
 
   const id = crypto.randomUUID()
   await db.insert(reservations).values({ id, restaurantId: session.restaurantId, ...parsed.data })
-  const res = await db.select().from(reservations).where(eq(reservations.id, id)).get()
+  const res = await db.select().from(reservations).where(eq(reservations.id, id)).then(rows => rows[0])
   return NextResponse.json(res, { status: 201 })
 }

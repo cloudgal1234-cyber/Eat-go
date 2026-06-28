@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: { restaurantI
     address: restaurants.address,
     phone: restaurants.phone,
     logo: restaurants.logo,
-  }).from(restaurants).where(eq(restaurants.id, params.restaurantId)).get()
+  }).from(restaurants).where(eq(restaurants.id, params.restaurantId)).then(rows => rows[0])
 
   if (!restaurant) return NextResponse.json({ error: 'מסעדה לא נמצאה' }, { status: 404 })
 

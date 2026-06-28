@@ -1,9 +1,8 @@
-import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core'
-import { sql } from 'drizzle-orm'
+import { pgTable, text, integer, real, boolean, index } from 'drizzle-orm/pg-core'
 
-const now = () => sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`
+const nowIso = () => new Date().toISOString()
 
-export const restaurants = sqliteTable('restaurants', {
+export const restaurants = pgTable('restaurants', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
@@ -12,11 +11,11 @@ export const restaurants = sqliteTable('restaurants', {
   phone: text('phone'),
   logo: text('logo'),
   description: text('description'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const employees = sqliteTable('employees', {
+export const employees = pgTable('employees', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
@@ -24,24 +23,24 @@ export const employees = sqliteTable('employees', {
   phone: text('phone'),
   role: text('role').notNull().default('WAITER'),
   salary: real('salary'),
-  hireDate: text('hire_date').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  hireDate: text('hire_date').notNull().$defaultFn(nowIso),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 }, (t) => ({ emailRestaurantIdx: index('employees_email_restaurant').on(t.email, t.restaurantId) }))
 
-export const menuCategories = sqliteTable('menu_categories', {
+export const menuCategories = pgTable('menu_categories', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   sortOrder: integer('sort_order').notNull().default(0),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const menuItems = sqliteTable('menu_items', {
+export const menuItems = pgTable('menu_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   categoryId: text('category_id').references(() => menuCategories.id),
@@ -49,14 +48,14 @@ export const menuItems = sqliteTable('menu_items', {
   description: text('description'),
   price: real('price').notNull(),
   image: text('image'),
-  isAvailable: integer('is_available', { mode: 'boolean' }).notNull().default(true),
+  isAvailable: boolean('is_available').notNull().default(true),
   allergens: text('allergens'),
   preparationTime: integer('preparation_time'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const customers = sqliteTable('customers', {
+export const customers = pgTable('customers', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
@@ -64,22 +63,22 @@ export const customers = sqliteTable('customers', {
   phone: text('phone'),
   loyaltyPoints: integer('loyalty_points').notNull().default(0),
   totalSpent: real('total_spent').notNull().default(0),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 }, (t) => ({ emailRestaurantIdx: index('customers_email_restaurant').on(t.email, t.restaurantId) }))
 
-export const tables = sqliteTable('tables', {
+export const tables = pgTable('tables', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   number: integer('number').notNull(),
   capacity: integer('capacity').notNull(),
-  isAvailable: integer('is_available', { mode: 'boolean' }).notNull().default(true),
+  isAvailable: boolean('is_available').notNull().default(true),
   location: text('location'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const orders = sqliteTable('orders', {
+export const orders = pgTable('orders', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   customerId: text('customer_id').references(() => customers.id),
@@ -91,11 +90,11 @@ export const orders = sqliteTable('orders', {
   paymentStatus: text('payment_status').notNull().default('PENDING'),
   paymentMethod: text('payment_method'),
   deliveryAddress: text('delivery_address'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const orderItems = sqliteTable('order_items', {
+export const orderItems = pgTable('order_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   orderId: text('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
   menuItemId: text('menu_item_id').notNull().references(() => menuItems.id),
@@ -104,18 +103,18 @@ export const orderItems = sqliteTable('order_items', {
   notes: text('notes'),
 })
 
-export const couriers = sqliteTable('couriers', {
+export const couriers = pgTable('couriers', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   phone: text('phone').notNull(),
-  isAvailable: integer('is_available', { mode: 'boolean' }).notNull().default(true),
+  isAvailable: boolean('is_available').notNull().default(true),
   vehicleType: text('vehicle_type'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const deliveries = sqliteTable('deliveries', {
+export const deliveries = pgTable('deliveries', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   orderId: text('order_id').notNull().unique().references(() => orders.id),
@@ -123,11 +122,11 @@ export const deliveries = sqliteTable('deliveries', {
   address: text('address').notNull(),
   status: text('status').notNull().default('PENDING'),
   estimatedTime: integer('estimated_time'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const reservations = sqliteTable('reservations', {
+export const reservations = pgTable('reservations', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   customerId: text('customer_id').references(() => customers.id),
@@ -140,11 +139,11 @@ export const reservations = sqliteTable('reservations', {
   partySize: integer('party_size').notNull(),
   status: text('status').notNull().default('PENDING'),
   notes: text('notes'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const inventoryItems = sqliteTable('inventory_items', {
+export const inventoryItems = pgTable('inventory_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
@@ -154,23 +153,23 @@ export const inventoryItems = sqliteTable('inventory_items', {
   costPerUnit: real('cost_per_unit'),
   supplier: text('supplier'),
   category: text('category'),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const loyaltyPrograms = sqliteTable('loyalty_programs', {
+export const loyaltyPrograms = pgTable('loyalty_programs', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().unique().references(() => restaurants.id, { onDelete: 'cascade' }),
   pointsPerAmount: real('points_per_amount').notNull().default(1),
   rewardThreshold: integer('reward_threshold').notNull().default(100),
   rewardValue: real('reward_value').notNull().default(10),
   rewardType: text('reward_type').notNull().default('DISCOUNT'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
-export const feedback = sqliteTable('feedback', {
+export const feedback = pgTable('feedback', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   customerId: text('customer_id').references(() => customers.id),
@@ -179,7 +178,7 @@ export const feedback = sqliteTable('feedback', {
   comment: text('comment'),
   category: text('category'),
   response: text('response'),
-  isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(true),
-  createdAt: text('created_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
-  updatedAt: text('updated_at').notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`),
+  isPublic: boolean('is_public').notNull().default(true),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })

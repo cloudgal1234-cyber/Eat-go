@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const cat = await db.select().from(menuCategories)
-    .where(and(eq(menuCategories.id, params.id), eq(menuCategories.restaurantId, session.restaurantId))).get()
+    .where(and(eq(menuCategories.id, params.id), eq(menuCategories.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!cat) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   const body = await req.json()
@@ -25,7 +25,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!parsed.success) return NextResponse.json({ error: 'נתונים לא תקינים' }, { status: 400 })
 
   await db.update(menuCategories).set({ ...parsed.data, updatedAt: new Date().toISOString() }).where(eq(menuCategories.id, params.id))
-  const updated = await db.select().from(menuCategories).where(eq(menuCategories.id, params.id)).get()
+  const updated = await db.select().from(menuCategories).where(eq(menuCategories.id, params.id)).then(rows => rows[0])
   return NextResponse.json(updated)
 }
 
@@ -35,7 +35,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const cat = await db.select().from(menuCategories)
-    .where(and(eq(menuCategories.id, params.id), eq(menuCategories.restaurantId, session.restaurantId))).get()
+    .where(and(eq(menuCategories.id, params.id), eq(menuCategories.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!cat) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   await db.delete(menuCategories).where(eq(menuCategories.id, params.id))

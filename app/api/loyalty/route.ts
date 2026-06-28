@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const loyalty = await db.select().from(loyaltyPrograms)
-    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).get()
+    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).then(rows => rows[0])
   return NextResponse.json(loyalty)
 }
 
@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'נתונים לא תקינים' }, { status: 400 })
 
   const existing = await db.select().from(loyaltyPrograms)
-    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).get()
+    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).then(rows => rows[0])
 
   if (existing) {
     await db.update(loyaltyPrograms)
@@ -47,6 +47,6 @@ export async function PUT(req: NextRequest) {
   }
 
   const updated = await db.select().from(loyaltyPrograms)
-    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).get()
+    .where(eq(loyaltyPrograms.restaurantId, session.restaurantId)).then(rows => rows[0])
   return NextResponse.json(updated)
 }

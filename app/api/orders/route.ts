@@ -50,11 +50,11 @@ export async function GET(req: NextRequest) {
       .where(eq(orderItems.orderId, order.id))
 
     const customer = order.customerId
-      ? await db.select().from(customers).where(eq(customers.id, order.customerId)).get()
+      ? await db.select().from(customers).where(eq(customers.id, order.customerId)).then(rows => rows[0])
       : null
 
     const table = order.tableId
-      ? await db.select().from(tables).where(eq(tables.id, order.tableId)).get()
+      ? await db.select().from(tables).where(eq(tables.id, order.tableId)).then(rows => rows[0])
       : null
 
     const delivery = await db.select({
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       address: deliveries.address,
       estimatedTime: deliveries.estimatedTime,
       courierId: deliveries.courierId,
-    }).from(deliveries).where(eq(deliveries.orderId, order.id)).get()
+    }).from(deliveries).where(eq(deliveries.orderId, order.id)).then(rows => rows[0])
 
     return {
       ...order,
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const order = await db.select().from(orders).where(eq(orders.id, orderId)).get()
+    const order = await db.select().from(orders).where(eq(orders.id, orderId)).then(rows => rows[0])
     return NextResponse.json(order, { status: 201 })
   } catch (e) {
     console.error(e)

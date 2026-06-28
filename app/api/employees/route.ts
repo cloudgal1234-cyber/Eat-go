@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       ...parsed.data,
       hireDate: parsed.data.hireDate || new Date().toISOString(),
     })
-    const emp = await db.select().from(employees).where(eq(employees.id, id)).get()
+    const emp = await db.select().from(employees).where(eq(employees.id, id)).then(rows => rows[0])
     return NextResponse.json(emp, { status: 201 })
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && String(e.message).includes('UNIQUE')) {

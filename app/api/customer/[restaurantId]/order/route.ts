@@ -21,7 +21,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: { restaurantId: string } }) {
   initDb()
-  const restaurant = await db.select().from(restaurants).where(eq(restaurants.id, params.restaurantId)).get()
+  const restaurant = await db.select().from(restaurants).where(eq(restaurants.id, params.restaurantId)).then(rows => rows[0])
   if (!restaurant) return NextResponse.json({ error: 'מסעדה לא נמצאה' }, { status: 404 })
 
   const body = await req.json()
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: { restaurantI
   let customerId: string | undefined
   if (customerEmail) {
     const existing = await db.select().from(customers)
-      .where(and(eq(customers.email, customerEmail), eq(customers.restaurantId, params.restaurantId))).get()
+      .where(and(eq(customers.email, customerEmail), eq(customers.restaurantId, params.restaurantId))).then(rows => rows[0])
 
     if (existing) {
       await db.update(customers).set({ name: customerName, phone: customerPhone, updatedAt: new Date().toISOString() })

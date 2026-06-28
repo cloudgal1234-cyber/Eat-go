@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const item = await db.select().from(inventoryItems)
-    .where(and(eq(inventoryItems.id, params.id), eq(inventoryItems.restaurantId, session.restaurantId))).get()
+    .where(and(eq(inventoryItems.id, params.id), eq(inventoryItems.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!item) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   const body = await req.json()
@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!parsed.success) return NextResponse.json({ error: 'נתונים לא תקינים' }, { status: 400 })
 
   await db.update(inventoryItems).set({ ...parsed.data, updatedAt: new Date().toISOString() }).where(eq(inventoryItems.id, params.id))
-  const updated = await db.select().from(inventoryItems).where(eq(inventoryItems.id, params.id)).get()
+  const updated = await db.select().from(inventoryItems).where(eq(inventoryItems.id, params.id)).then(rows => rows[0])
   return NextResponse.json(updated)
 }
 
@@ -38,7 +38,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const item = await db.select().from(inventoryItems)
-    .where(and(eq(inventoryItems.id, params.id), eq(inventoryItems.restaurantId, session.restaurantId))).get()
+    .where(and(eq(inventoryItems.id, params.id), eq(inventoryItems.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!item) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   await db.delete(inventoryItems).where(eq(inventoryItems.id, params.id))

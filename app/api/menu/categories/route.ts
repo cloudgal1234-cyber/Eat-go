@@ -42,6 +42,6 @@ export async function POST(req: NextRequest) {
 
   const id = crypto.randomUUID()
   await db.insert(menuCategories).values({ id, restaurantId: session.restaurantId, ...parsed.data })
-  const cat = await db.select().from(menuCategories).where(eq(menuCategories.id, id)).get()
+  const cat = await db.select().from(menuCategories).where(eq(menuCategories.id, id)).then(rows => rows[0])
   return NextResponse.json({ ...cat, items: [] }, { status: 201 })
 }

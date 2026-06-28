@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   try {
     const id = crypto.randomUUID()
     await db.insert(tables).values({ id, restaurantId: session.restaurantId, ...parsed.data })
-    const table = await db.select().from(tables).where(eq(tables.id, id)).get()
+    const table = await db.select().from(tables).where(eq(tables.id, id)).then(rows => rows[0])
     return NextResponse.json(table, { status: 201 })
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && String(e.message).includes('UNIQUE')) {

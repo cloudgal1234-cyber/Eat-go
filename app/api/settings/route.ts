@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     description: restaurants.description,
     logo: restaurants.logo,
     createdAt: restaurants.createdAt,
-  }).from(restaurants).where(eq(restaurants.id, session.restaurantId)).get()
+  }).from(restaurants).where(eq(restaurants.id, session.restaurantId)).then(rows => rows[0])
 
   return NextResponse.json(restaurant)
 }
@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest) {
   const updated = await db.select({
     id: restaurants.id, name: restaurants.name, email: restaurants.email,
     phone: restaurants.phone, address: restaurants.address, description: restaurants.description, logo: restaurants.logo,
-  }).from(restaurants).where(eq(restaurants.id, session.restaurantId)).get()
+  }).from(restaurants).where(eq(restaurants.id, session.restaurantId)).then(rows => rows[0])
 
   return NextResponse.json(updated)
 }

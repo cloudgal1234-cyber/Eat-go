@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return NextResponse.json({ error: 'נתונים לא תקינים' }, { status: 400 })
 
     const { email, password } = parsed.data
-    const restaurant = await db.select().from(restaurants).where(eq(restaurants.email, email)).get()
+    const restaurant = await db.select().from(restaurants).where(eq(restaurants.email, email)).then(rows => rows[0])
     if (!restaurant) return NextResponse.json({ error: 'אימייל או סיסמה שגויים' }, { status: 401 })
 
     const match = await bcrypt.compare(password, restaurant.password)

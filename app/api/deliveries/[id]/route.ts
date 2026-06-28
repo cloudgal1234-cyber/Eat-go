@@ -16,7 +16,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const delivery = await db.select().from(deliveries)
-    .where(and(eq(deliveries.id, params.id), eq(deliveries.restaurantId, session.restaurantId))).get()
+    .where(and(eq(deliveries.id, params.id), eq(deliveries.restaurantId, session.restaurantId))).then(rows => rows[0])
   if (!delivery) return NextResponse.json({ error: 'לא נמצא' }, { status: 404 })
 
   const body = await req.json()
@@ -25,11 +25,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   if (parsed.data.courierId) {
     const courier = await db.select().from(couriers)
-      .where(and(eq(couriers.id, parsed.data.courierId), eq(couriers.restaurantId, session.restaurantId))).get()
+      .where(and(eq(couriers.id, parsed.data.courierId), eq(couriers.restaurantId, session.restaurantId))).then(rows => rows[0])
     if (!courier) return NextResponse.json({ error: 'שליח לא נמצא' }, { status: 404 })
   }
 
   await db.update(deliveries).set({ ...parsed.data, updatedAt: new Date().toISOString() }).where(eq(deliveries.id, params.id))
-  const updated = await db.select().from(deliveries).where(eq(deliveries.id, params.id)).get()
+  const updated = await db.select().from(deliveries).where(eq(deliveries.id, params.id)).then(rows => rows[0])
   return NextResponse.json(updated)
 }

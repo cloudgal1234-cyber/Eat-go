@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   const result = await Promise.all(customerList.map(async c => {
     const orderCount = await db.select({ count: sql<number>`count(*)` })
-      .from(orders).where(eq(orders.customerId, c.id)).get()
+      .from(orders).where(eq(orders.customerId, c.id)).then(rows => rows[0])
     return { ...c, _count: { orders: orderCount?.count || 0 } }
   }))
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const id = crypto.randomUUID()
     await db.insert(customers).values({ id, restaurantId: session.restaurantId, ...parsed.data })
-    const customer = await db.select().from(customers).where(eq(customers.id, id)).get()
+    const customer = await db.select().from(customers).where(eq(customers.id, id)).then(rows => rows[0])
     return NextResponse.json(customer, { status: 201 })
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'message' in e && String(e.message).includes('UNIQUE')) {
