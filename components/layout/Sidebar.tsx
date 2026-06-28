@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -23,11 +22,18 @@ interface SidebarProps {
   restaurantName: string
   isOpen?: boolean
   onClose?: () => void
+  currentPath: string
 }
 
-function SidebarContent({ restaurantName, onClose }: { restaurantName: string; onClose?: () => void }) {
-  const pathname = usePathname()
-
+function SidebarContent({
+  restaurantName,
+  onClose,
+  currentPath,
+}: {
+  restaurantName: string
+  onClose?: () => void
+  currentPath: string
+}) {
   return (
     <>
       <div className="p-5 border-b border-gray-700 flex items-center justify-between">
@@ -53,14 +59,13 @@ function SidebarContent({ restaurantName, onClose }: { restaurantName: string; o
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map(item => {
           const isActive = item.href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(item.href)
+            ? currentPath === '/dashboard'
+            : currentPath.startsWith(item.href)
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              onClick={onClose}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
                 isActive
@@ -90,12 +95,12 @@ function SidebarContent({ restaurantName, onClose }: { restaurantName: string; o
   )
 }
 
-export default function Sidebar({ restaurantName, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ restaurantName, isOpen, onClose, currentPath }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar — always in flow */}
       <aside className="hidden md:flex flex-col w-64 bg-gray-900 min-h-screen shrink-0">
-        <SidebarContent restaurantName={restaurantName} />
+        <SidebarContent restaurantName={restaurantName} currentPath={currentPath} />
       </aside>
 
       {/* Mobile sidebar — slide-in overlay from the right (RTL) */}
@@ -105,7 +110,7 @@ export default function Sidebar({ restaurantName, isOpen, onClose }: SidebarProp
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
-        <SidebarContent restaurantName={restaurantName} onClose={onClose} />
+        <SidebarContent restaurantName={restaurantName} onClose={onClose} currentPath={currentPath} />
       </aside>
     </>
   )
