@@ -15,6 +15,7 @@ const navItems = [
   { href: '/dashboard/customers', label: 'לקוחות', icon: '🧑‍🤝‍🧑' },
   { href: '/dashboard/loyalty', label: 'תוכנית נאמנות', icon: '⭐' },
   { href: '/dashboard/feedback', label: 'משובים', icon: '💬' },
+  { href: '/dashboard/staff-access', label: 'גישת צוות', icon: '🔑' },
   { href: '/dashboard/settings', label: 'הגדרות', icon: '⚙️' },
 ]
 

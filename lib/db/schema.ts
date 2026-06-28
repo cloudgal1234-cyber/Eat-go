@@ -169,6 +169,16 @@ export const loyaltyPrograms = pgTable('loyalty_programs', {
   updatedAt: text('updated_at').notNull().$defaultFn(nowIso),
 })
 
+export const staffInviteCodes = pgTable('staff_invite_codes', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
+  code: text('code').notNull().unique(),
+  role: text('role').notNull(),
+  label: text('label'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+})
+
 export const feedback = pgTable('feedback', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),

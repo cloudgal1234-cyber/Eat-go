@@ -210,6 +210,17 @@ export async function initDb() {
     )
   `
   await sql`
+    CREATE TABLE IF NOT EXISTS staff_invite_codes (
+      id TEXT PRIMARY KEY,
+      restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+      code TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL,
+      label TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TEXT NOT NULL
+    )
+  `
+  await sql`
     CREATE TABLE IF NOT EXISTS feedback (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
