@@ -17,11 +17,11 @@ export async function GET(_req: NextRequest, { params }: { params: { restaurantI
   if (!restaurant) return NextResponse.json({ error: 'מסעדה לא נמצאה' }, { status: 404 })
 
   const cats = await db.select().from(menuCategories)
-    .where(and(eq(menuCategories.restaurantId, params.restaurantId), eq(menuCategories.isActive, true)))
+    .where(eq(menuCategories.restaurantId, params.restaurantId))
     .orderBy(asc(menuCategories.sortOrder))
 
   const items = await db.select().from(menuItems)
-    .where(and(eq(menuItems.restaurantId, params.restaurantId), eq(menuItems.isAvailable, true)))
+    .where(eq(menuItems.restaurantId, params.restaurantId))
 
   const categories = cats.map(cat => ({
     ...cat,

@@ -83,10 +83,13 @@ export default function CustomerPage() {
     fetch(`/api/customer/${restaurantId}/menu`)
       .then(r => r.json())
       .then(data => {
-        setRestaurant(data.restaurant)
-        setCategories(data.categories)
-        if (data.categories.length > 0) setActiveCategory(data.categories[0].id)
+        if (data.restaurant) setRestaurant(data.restaurant)
+        if (Array.isArray(data.categories)) {
+          setCategories(data.categories)
+          if (data.categories.length > 0) setActiveCategory(data.categories[0].id)
+        }
       })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [restaurantId])
 
