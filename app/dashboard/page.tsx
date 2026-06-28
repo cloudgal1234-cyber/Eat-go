@@ -65,16 +65,16 @@ export default async function DashboardPage() {
         <p className="text-gray-500 mt-1">סקירה כללית של המסעדה</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {stats.map(stat => (
           <Link key={stat.label} href={stat.href}>
             <Card className={`border-2 hover:shadow-md transition-shadow cursor-pointer ${stat.color}`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-600 truncate">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-0.5">{stat.value}</p>
                 </div>
-                <span className="text-2xl">{stat.icon}</span>
+                <span className="text-3xl shrink-0">{stat.icon}</span>
               </div>
             </Card>
           </Link>

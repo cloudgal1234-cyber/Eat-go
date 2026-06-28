@@ -19,24 +19,38 @@ const navItems = [
   { href: '/dashboard/settings', label: 'הגדרות', icon: '⚙️' },
 ]
 
-export default function Sidebar({ restaurantName }: { restaurantName: string }) {
+interface SidebarProps {
+  restaurantName: string
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+function SidebarContent({ restaurantName, onClose }: { restaurantName: string; onClose?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-gray-900 min-h-screen flex flex-col">
-      <div className="p-6 border-b border-gray-700">
+    <>
+      <div className="p-5 border-b border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+          <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center text-white font-bold text-base shrink-0">
             {restaurantName.charAt(0)}
           </div>
-          <div>
-            <p className="text-white font-semibold text-sm leading-tight">{restaurantName}</p>
+          <div className="min-w-0">
+            <p className="text-white font-semibold text-sm leading-tight truncate">{restaurantName}</p>
             <p className="text-gray-400 text-xs">לוח ניהול</p>
           </div>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden text-gray-400 hover:text-white p-1 rounded"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map(item => {
           const isActive = item.href === '/dashboard'
             ? pathname === '/dashboard'
@@ -46,6 +60,7 @@ export default function Sidebar({ restaurantName }: { restaurantName: string }) 
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
                 isActive
@@ -53,14 +68,14 @@ export default function Sidebar({ restaurantName }: { restaurantName: string }) 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               )}
             >
-              <span className="text-base">{item.icon}</span>
+              <span className="text-base shrink-0">{item.icon}</span>
               <span>{item.label}</span>
             </Link>
           )
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-3 border-t border-gray-700">
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
@@ -71,6 +86,27 @@ export default function Sidebar({ restaurantName }: { restaurantName: string }) 
           </button>
         </form>
       </div>
-    </aside>
+    </>
+  )
+}
+
+export default function Sidebar({ restaurantName, isOpen, onClose }: SidebarProps) {
+  return (
+    <>
+      {/* Desktop sidebar — always in flow */}
+      <aside className="hidden md:flex flex-col w-64 bg-gray-900 min-h-screen shrink-0">
+        <SidebarContent restaurantName={restaurantName} />
+      </aside>
+
+      {/* Mobile sidebar — slide-in overlay from the right (RTL) */}
+      <aside
+        className={cn(
+          'md:hidden fixed top-0 right-0 h-full w-72 bg-gray-900 flex flex-col z-30 transition-transform duration-300 ease-in-out',
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
+        <SidebarContent restaurantName={restaurantName} onClose={onClose} />
+      </aside>
+    </>
   )
 }
