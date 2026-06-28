@@ -1,14 +1,32 @@
 import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
+import type { NeonHttpDatabase } from 'drizzle-orm/neon-http'
 import * as schema from './schema'
 
-const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
-// Fallback prevents build-time crash; real URL is required at runtime
-const sqlFn = neon(dbUrl || 'postgresql://localhost/placeholder')
-export const db = drizzle(sqlFn, { schema })
+let _db: NeonHttpDatabase<typeof schema> | undefined
+let _sql: ReturnType<typeof neon> | undefined
+
+function getConnection() {
+  if (!_db || !_sql) {
+    const url = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
+    if (!url) throw new Error('DATABASE_URL environment variable is not set')
+    _sql = neon(url)
+    _db = drizzle(_sql, { schema })
+  }
+  return { db: _db!, sql: _sql! }
+}
+
+export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
+  get(_, prop) {
+    const { db } = getConnection()
+    const value = (db as any)[prop]
+    return typeof value === 'function' ? value.bind(db) : value
+  }
+})
 
 export async function initDb() {
-  await sqlFn`
+  const { sql } = getConnection()
+  await sql`
     CREATE TABLE IF NOT EXISTS restaurants (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -22,7 +40,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS employees (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -38,7 +56,7 @@ export async function initDb() {
       UNIQUE(email, restaurant_id)
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS menu_categories (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -50,7 +68,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS menu_items (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -66,7 +84,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS customers (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -80,7 +98,7 @@ export async function initDb() {
       UNIQUE(email, restaurant_id)
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS tables (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -93,7 +111,7 @@ export async function initDb() {
       UNIQUE(number, restaurant_id)
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -110,7 +128,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS order_items (
       id TEXT PRIMARY KEY,
       order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -120,7 +138,7 @@ export async function initDb() {
       notes TEXT
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS couriers (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -132,7 +150,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS deliveries (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -145,7 +163,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS reservations (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -163,7 +181,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS inventory_items (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -178,7 +196,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS loyalty_programs (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL UNIQUE REFERENCES restaurants(id) ON DELETE CASCADE,
@@ -191,7 +209,7 @@ export async function initDb() {
       updated_at TEXT NOT NULL
     )
   `
-  await sqlFn`
+  await sql`
     CREATE TABLE IF NOT EXISTS feedback (
       id TEXT PRIMARY KEY,
       restaurant_id TEXT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
