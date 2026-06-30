@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function StaffLogin() {
   const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +18,7 @@ export default function StaffLogin() {
     const res = await fetch('/api/staff/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code.toUpperCase(), staffName: name }),
+      body: JSON.stringify({ code: code.toUpperCase(), staffName: name, staffPhone: phone || undefined }),
     })
     const data = await res.json()
     if (!res.ok) {
@@ -35,7 +36,7 @@ export default function StaffLogin() {
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🍽️</div>
           <h1 className="text-xl font-bold text-gray-900">כניסת צוות</h1>
-          <p className="text-gray-500 text-sm mt-1">הכנס קוד הצטרפות שקיבלת מהמנהל</p>
+          <p className="text-gray-500 text-sm mt-1">הכנס קוד הצטרפות שקיבלת מהמנהל. הבקשה תאושר על ידי המנהל לפני שתוכל לעבוד.</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -47,6 +48,16 @@ export default function StaffLogin() {
               required
               minLength={2}
               placeholder="ישראל ישראלי"
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">טלפון (אופציונלי)</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="050-1234567"
               className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -69,7 +80,7 @@ export default function StaffLogin() {
             disabled={loading || name.trim().length < 2 || code.length < 6}
             className="w-full bg-primary-600 text-white py-3 rounded-xl font-medium text-base disabled:opacity-50 transition-opacity"
           >
-            {loading ? 'נכנס...' : 'כניסה ←'}
+            {loading ? 'שולח בקשה...' : 'שלח בקשת הצטרפות ←'}
           </button>
         </form>
       </div>

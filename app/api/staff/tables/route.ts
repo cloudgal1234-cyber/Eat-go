@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, tables, orders } from '@/lib/db'
 import { eq, and, inArray } from 'drizzle-orm'
-import { getStaffSessionFromRequest } from '@/lib/staff-auth'
+import { getApprovedStaffMemberFromRequest } from '@/lib/staff-auth'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   await initDb()
-  const session = await getStaffSessionFromRequest(req)
+  const session = await getApprovedStaffMemberFromRequest(req)
   if (!session) return NextResponse.json({ error: 'לא מורשה' }, { status: 401 })
 
   const { restaurantId } = session

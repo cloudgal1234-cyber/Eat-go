@@ -14,6 +14,8 @@ const createSchema = z.object({
   label: z.string().optional(),
 })
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   await initDb()
   const session = await getSessionFromRequest(req)

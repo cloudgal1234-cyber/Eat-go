@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, initDb, orders } from '@/lib/db'
 import { eq, and } from 'drizzle-orm'
-import { getStaffSessionFromRequest } from '@/lib/staff-auth'
+import { getApprovedStaffMemberFromRequest } from '@/lib/staff-auth'
 
 export async function PATCH(req: NextRequest, { params }: { params: { orderId: string } }) {
   await initDb()
-  const session = await getStaffSessionFromRequest(req)
+  const session = await getApprovedStaffMemberFromRequest(req)
   if (!session) return NextResponse.json({ error: 'לא מורשה' }, { status: 401 })
 
   const order = await db.select().from(orders)

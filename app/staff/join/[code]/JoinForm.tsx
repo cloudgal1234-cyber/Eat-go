@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function JoinForm({ code, role }: { code: string; role: string }) {
   const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function JoinForm({ code, role }: { code: string; role: string })
     const res = await fetch('/api/staff/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, staffName: name }),
+      body: JSON.stringify({ code, staffName: name, staffPhone: phone || undefined }),
     })
     const data = await res.json()
     if (!res.ok) {
@@ -42,14 +43,25 @@ export default function JoinForm({ code, role }: { code: string; role: string })
           autoFocus
         />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">טלפון (אופציונלי)</label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          placeholder="050-1234567"
+          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+      </div>
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
       <button
         type="submit"
         disabled={loading || name.trim().length < 2}
         className="w-full bg-primary-600 text-white py-3 rounded-xl font-medium text-base disabled:opacity-50 transition-opacity"
       >
-        {loading ? 'מצטרף...' : 'הצטרף לצוות ←'}
+        {loading ? 'שולח בקשה...' : 'שלח בקשת הצטרפות ←'}
       </button>
+      <p className="text-gray-400 text-xs text-center">הבקשה תאושר על ידי המנהל לפני שתוכל להתחיל לעבוד</p>
     </form>
   )
 }

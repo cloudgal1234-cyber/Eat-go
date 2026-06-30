@@ -179,6 +179,18 @@ export const staffInviteCodes = pgTable('staff_invite_codes', {
   createdAt: text('created_at').notNull().$defaultFn(nowIso),
 })
 
+export const staffMembers = pgTable('staff_members', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
+  inviteCodeId: text('invite_code_id').references(() => staffInviteCodes.id),
+  name: text('name').notNull(),
+  phone: text('phone'),
+  role: text('role').notNull(),
+  status: text('status').notNull().default('PENDING'),
+  createdAt: text('created_at').notNull().$defaultFn(nowIso),
+  approvedAt: text('approved_at'),
+})
+
 export const feedback = pgTable('feedback', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),

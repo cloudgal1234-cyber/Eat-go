@@ -1,15 +1,24 @@
-import { getStaffSession } from '@/lib/staff-auth'
+import { getStaffMember } from '@/lib/staff-auth'
 import { redirect } from 'next/navigation'
 import StaffLogin from './StaffLogin'
+import PendingView from './PendingView'
 
 export default async function StaffPage() {
-  const session = await getStaffSession()
+  const member = await getStaffMember()
 
-  if (session) {
-    if (session.role === 'CHEF') redirect('/staff/chef')
-    if (session.role === 'WAITER') redirect('/staff/waiter')
-    if (session.role === 'COURIER') redirect('/staff/courier')
+  if (!member) return <StaffLogin />
+
+  if (member.status === 'APPROVED') {
+    if (member.role === 'CHEF') redirect('/staff/chef')
+    if (member.role === 'WAITER') redirect('/staff/waiter')
+    if (member.role === 'COURIER') redirect('/staff/courier')
   }
 
-  return <StaffLogin />
+  return (
+    <PendingView
+      status={member.status as 'PENDING' | 'REJECTED'}
+      name={member.name}
+      restaurantName={member.restaurantName}
+    />
+  )
 }
