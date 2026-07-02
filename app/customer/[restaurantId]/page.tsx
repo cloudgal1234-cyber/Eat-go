@@ -4,6 +4,8 @@ import { eq, asc } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import CustomerView from './CustomerView'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CustomerPage({ params }: { params: { restaurantId: string } }) {
   const { restaurantId } = params
 
